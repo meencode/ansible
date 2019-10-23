@@ -1,0 +1,9 @@
+ansible ios_group -i hosts -c local -m ios_command -a "host={{device_ip}} username=admin password=cisco.123 commands='show version'"
+ansible ios_group -i hosts -c local -m ios_command -a "host={{device_ip}} username=admin password=cisco.123 commands='show version'"
+
+## to run docker commands , pip install docker needs to be done on the server where docker is going to be installed 
+
+
+####Setup details ####3
+10.106.253.15 root/Jala@FF14
+10.106.30.98 root/Pass@123

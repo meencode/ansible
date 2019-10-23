@@ -1,0 +1,21 @@
+
+[ios_group]
+GUN-STACK   device_ip=11.32.14.147
+
+[faucet_group]
+10.106.253.64
+
+[ios_group:vars]
+ansible_connection=local
+ansible_user=cisco
+ansible_ssh_pass=cisco
+ansible_auth_pass=cisco
+
+[faucet_group:vars]
+ansible_password=faucet@123
+ansible_user=faucet
+ansible_ssh_pass=faucet@123
+ansible_auth_pass=faucet@123
+ansible_sudo_pass=faucet@123
+ansible_paramiko_pass=faucet@123
+ansible_paramiko_user=faucet

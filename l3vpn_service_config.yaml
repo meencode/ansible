@@ -1,0 +1,46 @@
+---
+- hosts: ios
+  gather_facts: yes
+  connection: local
+
+  vars:
+    mgmt_username: "cisco"
+    mgmt_password: "cisco"
+
+  tasks:
+
+  - name: SYS | Define provider
+    set_fact:
+      provider:
+        host: "{{ inventory_hostname }}"
+        username: "{{ mgmt_username }}"
+        password: "{{ mgmt_password }}"
+  - name: Get Details
+    include_vars: vars/router.yml
+  - debug: var=routers
+
+  - name: IOS | Show clock
+    ios_command:
+      provider: "{{ provider }}"
+      commands:
+        - show version | i ios
+    register: clock
+
+  - debug: msg="{{ clock.stdout }}"
+
+  - name: un configure vrf settings
+    eos_config:
+      src: unconfig.l3vpn
+      force: yes
+      provider: "{{ provider }}"
+    when: item.key == inventory_hostname
+    with_dict: "{{ routers }}"
+    ignore_errors: yes
+
+  - name: configure vrf settings
+    eos_config:
+      src: config.l3vpn
+      force: yes
+      provider: "{{ provider }}"
+    when: item.key == inventory_hostname
+    with_dict: "{{ routers }}"

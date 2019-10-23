@@ -1,0 +1,62 @@
+routers:
+  PE1:
+    vrf:
+      name: pe1
+      rd: "300:1"
+      import_rt: '100:1'
+      export_rt: '200:1'
+    interface:
+      BDI:
+        name: BDI100
+        vrf: pe1
+        ip: 192.168.10.1
+        mask: 255.255.255.0
+      serviceinterface:
+        name: GigabitEthernet3
+        number: 100
+        encapType: dot1q
+        vlan: 100
+        rewriteOption: pop 1 symmetric
+        bdiId: 100
+        mtu: 1500
+        carrierdelay: 3
+        loadinterval: 50
+        negotiation: auto
+        keepalive: no
+        ip: no
+    protocol:
+      bgp:
+        as: 65002
+        vrf: pe1
+        redistribute: connected
+  PE2:
+    vrf:
+      name: pe2
+      rd: "300:2"
+      import_rt: '100:1'
+      export_rt: '200:1'
+    interface:
+      BDI:
+        name: BDI100
+        vrf: pe2
+        ip: 192.168.20.1
+        mask: 255.255.255.0
+      serviceinterface:
+        name: GigabitEthernet3
+        mtu: 1500
+        carrierdelay: 10
+        loadinterval: 50
+        negotiation: auto
+        keepalive: no
+        ip: no
+        number: 100
+        encapType: dot1q
+        vlan: 100
+        rewriteOption: pop 1 symmetric
+        bdiId: 100
+    protocol:
+      bgp:
+        as: 100
+        vrf: pe2
+        redistribute: connected
+

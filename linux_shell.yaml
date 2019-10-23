@@ -1,0 +1,31 @@
+---
+- name: apt update
+  hosts: faucet_group
+  gather_facts: false
+  become: yes
+  vars:
+    date_now: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+  tasks:
+  - name: hostname
+    shell: hostname
+    register: output
+
+  - name: debug msg output['stdout_lines']
+    debug:
+      msg: "{{ output['stdout_lines'] }}"
+
+  - name: lsb_release
+    shell : lsb_release -cs
+    register: output
+
+  - name: debug msg output
+    debug:
+      msg: "{{ output.stdout }}"
+  - set_fact:
+       lsb_release: "{{ output.stdout }}"
+  - debug: var=lsb_release
+
+  # Add specified repository into sources list.
+  - apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu $({{lsb_release}}) stable
+      state: present

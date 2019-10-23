@@ -1,0 +1,31 @@
+vrf definition {{ item.value.vrf.name }} 
+rd {{ item.value.vrf.rd }}
+address-family ipv4
+exit-address-family
+address-family ipv6
+exit-address-family
+exit
+interface {{ item.value.interface.BDI.name }}
+vrf forwarding {{ item.value.interface.BDI.vrf }}
+ip address {{ item.value.interface.BDI.ip }} {{item.value.interface.BDI.mask }}
+no shut
+interface {{ item.value.interface.serviceinterface.name }}
+mtu {{ item.value.interface.serviceinterface.mtu }}
+load-interval {{ item.value.interface.serviceinterface.loadinterval }}
+carrier-delay msec {{ item.value.interface.serviceinterface.carrierdelay }}
+negotiation {{ item.value.interface.serviceinterface.negotiation }}
+{% if item.value.interface.serviceinterface.keepalive == "no" %}
+no keepalive
+{% endif %}
+{% if item.value.interface.serviceinterface.ip == "no" %}
+no ip address
+{% endif %}
+no shutdown
+service instance  {{ item.value.interface.serviceinterface.number }} ethernet
+encapsulation {{ item.value.interface.serviceinterface.encapType }} {{ item.value.interface.serviceinterface.vlan }}
+rewrite ingress tag {{ item.value.interface.serviceinterface.rewriteOption }}
+bridge-domain {{ item.value.interface.serviceinterface.bdiId }}
+exit
+router bgp {{ item.value.protocol.bgp.as }}
+address-family ipv4 vrf {{ item.value.protocol.bgp.vrf }}
+redistribute {{ item.value.protocol.bgp.redistribute }}

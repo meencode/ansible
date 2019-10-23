@@ -1,0 +1,3 @@
+---
+# master ansible playbook file to run one or more playbooks
+- include: ios_show_command.yml

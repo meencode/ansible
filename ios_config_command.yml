@@ -1,0 +1,40 @@
+---
+- name: ios config commands 
+  hosts: ios_group
+  gather_facts: false
+  vars:
+    creds:
+      username:  "{{ansible_user}}"
+      password:  "{{ansible_ssh_pass}}"
+      host:      "{{device_ip}}"
+      authorize: yes
+      timeout: 60
+      transport: cli
+
+  tasks:
+  - name: configure domain name - domain passed in config
+    ios_config:
+      before: 
+      - no ip domain name
+      lines: 
+      - ip domain name svs 
+      provider: "{{creds}}"
+    register: output
+
+  - debug:
+      var: output
+
+  - name: configure domain name - domain name from group_vars/all.yml
+    ios_config:
+      before: 
+      - no ip domain name
+      lines: 
+      - ip domain name "{{domain_name}}"
+      provider: "{{creds}}"
+      backup: yes
+    register: output
+
+  - debug:
+      var: output
+
+

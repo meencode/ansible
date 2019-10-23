@@ -1,0 +1,2 @@
+% Command accepted but obsolete, unreleased or unsupported; see documentation.
+% BGP not active

@@ -1,0 +1,54 @@
+---
+- name: ios show commands 
+  hosts: ios_group
+  gather_facts: false
+  vars:
+    show_output_dir: "//auto/iconatest-bgl/users/seveluch/pyats/projects/ansible/data/device_output_collect"
+    date_now: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+
+
+  tasks:
+  - name: SYS | Define provider
+    set_fact:
+      creds:
+        host: "{{ device_ip }}"
+        username: "{{ ansible_user }}"
+        password: "{{ ansible_ssh_pass }}"
+
+  - include_vars:
+      file: show_commands.yml
+  - set_fact:
+       current_dir: "{{ lookup('env', 'PWD') }}"
+  - debug: var=current_dir
+  - debug: var=date_now
+  - debug:
+      msg: "{{ current_dir }}/{{ date_now }}"
+#  - set_fact : new_dir = "{{current_dir}}/{{inventory_hostname ~ '_' ~ date_now ~ '_' ~ item.0 | regex_replace(' ', '_')}}"
+  - set_fact:
+       output_dir: "{{ current_dir}}/{{ date_now }}"
+  - debug: var=output_dir
+  - file:
+      path: "{{ output_dir }}"
+      state: directory
+      mode: 0755
+
+  - debug:
+      msg: output
+
+  - name: run list of ios commands from show commands.yml
+    ios_command:
+      commands: show running
+      provider: "{{creds}}"
+    register: output
+
+  - debug:
+      var: output
+  - set_fact:
+       show_running: show running
+  - name: Save command output to local file
+    copy:
+      content: "{{output['stdout']}}"
+      dest: "{{output_dir}}/{{inventory_hostname  ~ '_' ~ show_running | regex_replace(' ', '_')}}.txt"
+    delegate_to: localhost
+
+

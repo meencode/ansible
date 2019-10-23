@@ -1,0 +1,166 @@
+---
+- name: apt update
+  hosts: faucet_group
+  gather_facts: false
+  become: yes
+  vars:
+    date_now: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+    packagesapt:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - python-pip
+    packagespip:
+      - docker-compose
+#  environment:
+#    PYTHONPATH: "{{ lookup('env','PYTHONPATH') }}:/auto/iconatest-bgl/users/seveluch/pyats/projects/env_ansible/lib/python2.7/site-packages"
+  tasks:
+  - name: hostname
+    shell: hostname
+    register: output
+
+  - name: debug msg output['stdout_lines']
+    debug:
+      msg: "{{ output['stdout_lines'] }}"
+  - name: Update packages list
+    apt:
+      update_cache: yes
+    register: output
+
+  - name: debug msg output['stdout_lines']
+    debug:
+      msg: "{{ output }}"
+
+  - name: docker installed packages
+    apt:
+       name: "{{packagesapt}}"
+       state: latest
+    register: apt_packages
+
+  - name: debug msg output['stdout_lines']
+    debug:
+      msg: "{{ apt_packages}}"
+
+  - name:  adding apt key
+    apt_key:
+      url: curl -fsSL https://download.docker.com/linux/ubuntu/gpg
+      id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+      state: present
+    register: output
+    ignore_errors: true
+
+  - name: debug msg adding apt key
+    debug:
+      msg: "{{ output }}"
+
+  - name: Add Docker apt key
+    shell: "curl -sSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -"
+    args:
+      warn: no
+    register: output
+    when: output|failed
+
+  - name: debug msg Add Docker apt key
+    debug:
+      msg: "{{ output }}"
+
+  - name: lsb_release
+    shell : lsb_release -cs
+    register: output
+
+  - name: debug msg lsb_release
+    debug:
+      msg: "{{ output.stdout }}"
+  - set_fact:
+       lsb_release: "{{ output.stdout }}"
+  - debug: var=lsb_release
+
+  - name: add specified repository into source list
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{lsb_release}} stable
+    state: present
+    update_cache: yes
+    register: output
+
+  - name: debug msg add stable repository
+    debug:
+      msg: "{{ output }}"
+
+  - name: Update packages list
+    apt:
+      update_cache: yes
+    register: output
+
+  - name: debug msg apt-get update
+    debug:
+      msg: "{{ output}}"
+  - name: apt-cache madison
+    shell : apt-cache madison docker-ce
+    register: output
+
+  - name: debug msg apt-cache madison
+    debug:
+      msg: "{{ output}}"
+
+  - name: apt-cache madison
+    shell : apt-cache madison docker-ce | cut -b 14-34 | head -n 1
+    register: output
+
+  - name: debug msg apt-cache madison
+    debug:
+      msg: "{{ output.stdout}}"
+  - set_fact:
+       docker_release: "{{ output.stdout }}"
+  - debug: var=docker_release
+
+  - name: debug msg docker-release
+    debug:
+      msg: "{{ docker_release }}"
+
+  - name: Install Docker apt package
+    apt:
+      pkg: docker-ce
+      state: latest
+      update_cache: yes
+    register: output
+
+  - name: debug msg docker-ce install
+    debug:
+      msg: "{{ output }}"
+
+#  - name: Install Docker apt package
+#    apt:
+#      pkg: docker-ce={{ docker_release }}
+#      state: latest
+#      update_cache: yes
+
+  - name: Add the user faucet to docker group
+    user:
+      name: "{{ ansible_user }}"
+      groups: docker
+      append: yes
+    register: output
+
+  - name: debug msg add username
+    debug:
+      msg: "{{ output }}"
+  - name: Installing requried pip packages
+    pip:
+      name: "{{ packagespip }}"
+    register: output
+
+  - name: debug msg test
+    debug:
+      msg: "{{ output }}"
+
+  - name: checking hello-world container
+    docker_container:
+      name: test
+      image: hello-world
+      state: present
+    register: output
+
+  - name: debug msg test container
+    debug:
+      msg: "{{ output }}"

@@ -1,0 +1,57 @@
+---
+- name: ios save running config 
+  hosts: ios_group
+  gather_facts: false
+  vars:
+    creds:
+      username:  "{{ansible_user}}"
+      password:  "{{ansible_ssh_pass}}"
+      host:      "{{device_ip}}"
+      authorize: True
+      auth_pass: "{{ansible_auth_pass}}"
+#      transport: cli
+    conf_backup_dir: "/auto/iconatest-bgl/users/seveluch/pyats/projects/ansible/data/device_config_backup/" 
+    date_now: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+  tasks:
+#  - name: clear logging
+#    expect:
+#      command: "clear logging"
+#      responses:
+#        'Clear logging buffer [confirm]': ' '
+#      echo: yes
+#    register: output
+#
+#  - name: debug output
+#    debug:
+#      var: output
+
+  - name: dir flash:core
+    ios_command:
+      commands: show vlan
+      provider: "{{creds}}"
+    register: output
+
+  - name: debug output
+    debug:
+      var: output
+
+
+
+#  - name: ios command show running-config
+#    ios_command:
+#      commands: show running-config
+#      provider: "{{creds}}"
+#    register: run_cfg
+#
+#  #- name: debug var run_cfg
+#  #  debug:
+#  #    var: run_cfg
+#
+#  - name: Save configuration to local file
+#    copy:
+#      content: "{{run_cfg['stdout'][0]}}"
+#      dest: "{{conf_backup_dir}}/{{inventory_hostname ~ '_' ~ date_now}}.cfg"
+#    delegate_to: localhost
+#
+
+

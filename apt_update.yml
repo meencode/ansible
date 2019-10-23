@@ -1,0 +1,32 @@
+---
+- name: apt update
+  hosts: faucet_group
+  gather_facts: false
+  become: yes
+  vars:
+    date_now: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+  tasks:
+  - name: hostname
+    shell: hostname
+    register: output
+
+  - name: debug msg output['stdout_lines']
+    debug:
+      msg: "{{ output['stdout_lines'] }}"
+  - name: Update packages list
+    apt: 
+      update_cache: yes
+    register: output
+
+  - name: debug msg output['stdout_lines']
+    debug:
+      msg: "{{ output }}"
+
+  - name: upgrade all packages
+    apt:
+      upgrade: dist
+    register: apt_upgrade
+
+  - name: debug msg output['stdout_lines']
+    debug:
+      msg: "{{ apt_upgrade }}"
